@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Best Roadways — TMS Workflow: AS-IS → TO-BE</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0B1E3D;
+    --blue: #1646A9;
+    --accent: #F5A623;
+    --gold: #D4891A;
+    --green: #0E7C56;
+    --red: #C0392B;
+    --purple: #6B4FA0;
+    --teal: #0E7B99;
+    --bg: #F0F2F5;
+    --white: #FFFFFF;
+    --card: #FFFFFF;
+    --border: #D0D7E3;
+    --text: #1a2035;
+    --muted: #637085;
+    --ai-color: #7B2FBE;
+    --mobile-color: #0B7285;
+    --api-color: #B5451B;
+    --ws-color: #25D366;
+    --gmail-color: #D44638;
+    --drive-color: #1A73E8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--navy);
+    padding: 28px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 3px solid var(--accent);
+  }
+  .header-left h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+  .header-left p {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .header-badge {
+    background: var(--accent);
+    color: var(--navy);
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    background: var(--navy);
+    padding: 0 40px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .tab {
+    padding: 14px 28px;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab:hover:not(.active) { color: rgba(255,255,255,0.8); }
+
+  /* ── MAIN ── */
+  .main { padding: 32px 40px; max-width: 1600px; margin: 0 auto; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 28px;
+    padding: 16px 20px;
+    background: var(--white);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .legend-dot {
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+    padding-left: 4px;
+  }
+
+  /* ── FLOW GRID ── */
+  .flow-area { margin-bottom: 36px; }
+
+  .phase-row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 0;
+    margin-bottom: 6px;
+    align-items: start;
+  }
+
+  .phase-label {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 16px 16px 16px 0;
+    min-height: 60px;
+  }
+  .phase-badge {
+    background: var(--navy);
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 4px;
+    text-align: center;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+    min-width: 80px;
+  }
+
+  .phase-steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 10px 0;
+    border-left: 2px solid var(--border);
+    padding-left: 20px;
+    position: relative;
+  }
+  .phase-steps::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 18px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--navy);
+    border: 2px solid var(--white);
+  }
+
+  /* ── STEP CARD ── */
+  .step {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    min-width: 140px;
+    max-width: 200px;
+    position: relative;
+    cursor: default;
+    transition: all 0.15s;
+  }
+  .step:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+  .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    margin-bottom: 4px;
+    display: block;
+  }
+  .step-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+  .step-sub {
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .step-left-bar {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    border-radius: 8px 0 0 8px;
+  }
+
+  .step.masters { border-color: #CBD5E1; }
+  .step.masters .step-left-bar { background: #64748B; }
+  .step.booking { border-color: #BFDBFE; }
+  .step.booking .step-left-bar { background: var(--blue); }
+  .step.ops { border-color: #BBF7D0; }
+  .step.ops .step-left-bar { background: var(--green); }
+  .step.pod { border-color: #FDE68A; }
+  .step.pod .step-left-bar { background: var(--gold); }
+  .step.billing { border-color: #FECACA; }
+  .step.billing .step-left-bar { background: var(--red); }
+  .step.payment { border-color: #E9D5FF; }
+  .step.payment .step-left-bar { background: var(--purple); }
+
+  .arrow-between {
+    display: flex;
+    align-items: center;
+    color: var(--muted);
+    font-size: 14px;
+    padding: 0 2px;
+    align-self: center;
+    margin-top: 8px;
+  }
+
+  /* ── PAIN POINTS ── */
+  .pain-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .pain-card {
+    background: #FFF5F5;
+    border: 1.5px solid #FCA5A5;
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .pain-card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--red);
+    margin-bottom: 6px;
+  }
+  .pain-card p { font-size: 12px; color: #7f1d1d; line-height: 1.5; }
+
+  /* ── TO-BE GRID ── */
+  .tobe-phase-row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 0;
+    margin-bottom: 8px;
+    align-items: start;
+  }
+
+  .tobe-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-left: 2px solid #6B4FA0;
+    padding-left: 20px;
+    position: relative;
+  }
+  .tobe-steps::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 18px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #6B4FA0;
+    border: 2px solid var(--white);
+  }
+
+  .tobe-step {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .tobe-step-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .tobe-step-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .tobe-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .pill {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+  .pill-icon { font-size: 11px; }
+  .pill.ai { background: #F3E8FF; color: var(--ai-color); border: 1px solid #C084FC; }
+  .pill.mobile { background: #E0F2FE; color: var(--mobile-color); border: 1px solid #7DD3FC; }
+  .pill.api { background: #FFF1E6; color: var(--api-color); border: 1px solid #FB923C; }
+  .pill.whatsapp { background: #DCFCE7; color: #15803D; border: 1px solid #86EFAC; }
+  .pill.gmail { background: #FEE2E2; color: var(--gmail-color); border: 1px solid #FCA5A5; }
+  .pill.drive { background: #EFF6FF; color: var(--drive-color); border: 1px solid #93C5FD; }
+  .pill.existing { background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; }
+
+  .tobe-desc {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .tobe-improvements {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border);
+  }
+  .improvement-tag {
+    font-size: 10px;
+    background: #F0FDF4;
+    color: var(--green);
+    border: 1px solid #86EFAC;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  /* ── DATA ARCHITECTURE ── */
+  .arch-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .arch-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1.5px solid var(--border);
+  }
+  .arch-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .arch-card ul { list-style: none; }
+  .arch-card ul li {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 5px 0;
+    border-bottom: 1px solid #F1F5F9;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .arch-card ul li:last-child { border-bottom: none; }
+  .li-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── COMPARISON ── */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .compare-table th {
+    background: var(--navy);
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 14px 16px;
+    text-align: left;
+    letter-spacing: 0.5px;
+  }
+  .compare-table td {
+    padding: 12px 16px;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:nth-child(even) td { background: #F8FAFC; }
+  .status-bad { color: var(--red); font-weight: 600; }
+  .status-good { color: var(--green); font-weight: 600; }
+
+  /* ── API SECTION ── */
+  .api-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .api-card {
+    background: var(--white);
+    border: 1.5px solid #FED7AA;
+    border-radius: 8px;
+    padding: 12px 14px;
+    border-left: 4px solid var(--api-color);
+  }
+  .api-card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--api-color);
+    margin-bottom: 4px;
+  }
+  .api-card p { font-size: 10px; color: var(--muted); line-height: 1.5; }
+  .api-card .api-where {
+    font-size: 9px;
+    color: var(--blue);
+    font-weight: 600;
+    margin-top: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    background: #EFF6FF;
+    padding: 2px 6px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .main { padding: 20px; }
+    .phase-row, .tobe-phase-row { grid-template-columns: 1fr; }
+    .phase-label { justify-content: flex-start; }
+    .arch-grid { grid-template-columns: 1fr; }
+    .tabs { padding: 0 20px; overflow-x: auto; }
+    .header { padding: 20px; }
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  .info-banner {
+    background: linear-gradient(135deg, #0B1E3D, #1646A9);
+    color: #fff;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 13px;
+  }
+  .info-banner .icon { font-size: 22px; }
+
+  .tobe-phase-badge {
+    background: linear-gradient(135deg, #6B4FA0, #1646A9);
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 4px;
+    text-align: center;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+    min-width: 80px;
+  }
+
+  .ssot-banner {
+    background: linear-gradient(135deg, #1A73E8, #0B7285);
+    border-radius: 12px;
+    padding: 20px 24px;
+    color: #fff;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 20px;
+    align-items: center;
+  }
+  .ssot-icon { font-size: 40px; }
+  .ssot-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+  .ssot-sub { font-size: 13px; opacity: 0.8; }
+  .ssot-nodes {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .ssot-node {
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>Best Roadways Limited — TMS Process Design</h1>
+    <p>CN Creation → Bill Creation | Market Vehicle Flow | e-Fleet System</p>
+  </div>
+  <div class="header-badge">CONFIDENTIAL</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('asis')">📋 AS-IS Workflow</div>
+  <div class="tab" onclick="showTab('tobe')">🚀 TO-BE Workflow</div>
+  <div class="tab" onclick="showTab('apis')">🔌 API Integrations</div>
+  <div class="tab" onclick="showTab('compare')">📊 Comparison</div>
+</div>
+
+<!-- ─────────────────── AS-IS ─────────────────── -->
+<div id="asis" class="view active">
+<div class="main">
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#64748B"></div> Master Data</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> Booking / CN</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Operations</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div> POD / Delivery</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Billing</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div> Payment</div>
+  </div>
+
+  <div class="flow-area">
+    <div class="section-title">Phase 0 — Master Data Configuration</div>
+
+    <div class="phase-row">
+      <div class="phase-label"><div class="phase-badge">MASTERS<br>Setup</div></div>
+      <div class="phase-steps">
+        <div class="step masters"><span class="step-left-bar"></span><span class="step-num">M.1</span><div class="step-title">Place Master</div><div class="step-sub">Origin / destination city & state mapping</div></div>
+        <div class="arrow-between">→</div>
+        <div class="step masters"><span class="step-left-bar"></span><span class="step-num">M.2</span><div class="step-title">Route Master</div><div class="step-sub">Route, KM, transit hours, toll setup</div></div>
+        <div class="arrow-between">→</div>
+        <div class="step masters"><span class="step-left-bar"></span><span class="step-num">M.3</span><div class="step-title">Load Type Master</div><div class="step-sub">20 FT FCL, 10 MT, 17 FT, LPT etc.</div></div>
+        <div class="arrow-between">→</div>
+        <div class="step masters"><span class="step-left-bar"></span><span class="step-num">M.4</span><div class="step-title">Material / Unit Master</div><div class="step-sub">Bags, Drums, CBM, KG, Pieces etc.</div></div>
+        <div class="arrow-between">→</div>
+        <div class="step masters"><span class="step-left-bar"></span><span class="step-num">M.5</span><div class="step-title">Hire Vehicle Master</div><div class="step-sub">Registration, chassis, engine, GVW</div></div>
+        <div class="arrow-between">→</div>
+        <div class="step masters"><span class="step-left-bar"></span><span class="step-num">M.6</span><div class="step-title">Normal Rate Chart</div><div class="step-sub">Party-wise, route-wise freight rates</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="flow-area">
+    <div class="section-title">Phase 1 — Booking & Consignment Note (CN/LR) Creation</div>
+
+    <div class="phase-row">
+      <div class="phase-label"><div class="phase-badge">1.1<br>CN BASIC</div></div>
+      <div class="phase-steps">
+        <div class="step booking"><span class="step-left-bar"></span><span class="step-num">1.1</span><div class="step-title">CN Creation — Basic</div><div class="step-sub">Office, CN No, LR Date, Billing Party, Rate Chart, Load Type, Freight, Route</div></div>
+        <div class="arrow-between">→</div>
+        <div class="step booking"><span class="step-left-bar"></span><span class="step-num">1.2</span><div class="step-title">CN — Vehicle & Weight</div><div class="step-sub">Vehicle No [Hire], Material, Actual/Charged Weight, e-Way Bill No, Invoice details</div></div>
+        <div class="arrow-between">→</div>
+        <div class="step booking"><span class="step-left-bar"></span><span class="step-num">1.3</span><div class="step-title">CN — Market Details</div><div class="step-sub">Broker, GTA, Driver Mobile, Container Type, Load Detention, TripLog No</div></div>
+      </div>
+    </div>
+
+    <div class="phase-row" style="margin-top:6px">
+      <div class="phase-label"><div class="phase-badge" style="background:#1646A9">1.X<br>CHECKS</div></div>
+      <div class="phase-steps">
+        <div class="step booking"><span class="step-left-bar"></span><span class="step-num">✱</span><div class="step-title">Other Charges</div><div class="step-sub">Unloading, Redelivery, Cartage, Labour, Crossing Charge, Detention, Pickup</div></div>
+        <div class="arrow-between">+</div>
+        <div class="step booking"><span class="step-left-bar"></span><span class="step-num">✱</span><div class="step-title">Consignee Details</div><div class="step-sub">Address, Phone, GST No, CHA List for JNPT shipments</div></div>
+        <div class="arrow-between">+</div>
+        <div class="step booking"><span class="step-left-bar"></span><span class="step-num">✱</span><div class="step-title">Supp. Bill Type</div><div class="step-sub">GENERAL, BONDED WH, DETENTION, EMPTY LORRY RETURN etc.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="flow-area">
+    <div class="section-title">Phase 2 — Operations: Dispatch & Hire</div>
+
+    <div class="phase-row">
+      <div class="phase-label"><div class="phase-badge">2<br>CHALLAN</div></div>
+      <div class="phase-steps">
+        <div class="step ops"><span class="step-left-bar"></span><span class="step-num">2</span><div class="step-title">Challan Creation</div><div class="step-sub">Vehicle No, Route, Weight, No of Pieces, Challan Type, LR linking with CN Nos</div></div>
+      </div>
+    </div>
+
+    <div class="phase-row" style="margin-top:6px">
+      <div class="phase-label"><div class="phase-badge">3<br>FM/HIRE</div></div>
+      <div class="phase-steps">
+        <div class="step ops"><span class="step-left-bar"></span><span class="step-num">3.1</span><div class="step-title">Hire Memo (FM Slip)</div><div class="step-sub">HM No, Route, Vehicle, Broker, Driver, PAN Verification, Hire Rate, TDS Rate</div></div>
+        <div class="arrow-between">→</div>
+        <div class="step ops"><span class="step-left-bar"></span><span class="step-num">3.2</span><div class="step-title">FM Slip — Charges</div><div class="step-sub">Basic HC, TC Charge, TDS Amount, Extra Charges, Advance Details, CN linking</div></div>
+      </div>
+    </div>
+
+    <div class="phase-row" style="margin-top:6px">
+      <div class="phase-label"><div class="phase-badge">4<br>ARRIVAL</div></div>
+      <div class="phase-steps">
+        <div class="step ops"><span class="step-left-bar"></span><span class="step-num">4</span><div class="step-title">Arrival Report</div><div class="step-sub">Challan-wise arrival entry, MEMO, Cross Office Challan flag, Nature, Remarks</div></div>
+      </div>
+    </div>
+
+    <div class="phase-row" style="margin-top:6px">
+      <div class="phase-label"><div class="phase-badge">5<br>DLY CHALLAN</div></div>
+      <div class="phase-steps">
+        <div class="step ops"><span class="step-left-bar"></span><span class="step-num">5</span><div class="step-title">Delivery Challan / Gate Pass</div><div class="step-sub">Office, Date, Challan Type, Gatepass No — for warehouse/delivery point handover</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="flow-area">
+    <div class="section-title">Phase 3 — POD (Proof of Delivery)</div>
+
+    <div class="phase-row">
+      <div class="phase-label"><div class="phase-badge">6<br>POD</div></div>
+      <div class="phase-steps">
+        <div class="step pod"><span class="step-left-bar"></span><span class="step-num">6.1</span><div class="step-title">CN POD Receipt</div><div class="step-sub">Search by CN, verify deposited at office, POD Date, Reach/Unload Date, U/Days</div></div>
+        <div class="arrow-between">→</div>
+        <div class="step pod"><span class="step-left-bar"></span><span class="step-num">6.2</span><div class="step-title">POD Image Upload</div><div class="step-sub">Upload scanned POD copy as soft copy — manual scan + upload process</div></div>
+        <div class="arrow-between">→</div>
+        <div class="step pod"><span class="step-left-bar"></span><span class="step-num">7</span><div class="step-title">POD Dashboard</div><div class="step-sub">Track POD Status: Uploaded/Pending across all CNs, offices, routes</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="flow-area">
+    <div class="section-title">Phase 4 — Billing</div>
+
+    <div class="phase-row">
+      <div class="phase-label"><div class="phase-badge">8<br>BILL</div></div>
+      <div class="phase-steps">
+        <div class="step billing"><span class="step-left-bar"></span><span class="step-num">8.1</span><div class="step-title">Bill Creation — Basic</div><div class="step-sub">Division, Office, Party, GSTN, Type of Supply, Bill Date, State, HSN/SAC</div></div>
+        <div class="arrow-between">→</div>
+        <div class="step billing"><span class="step-left-bar"></span><span class="step-num">8.2</span><div class="step-title">Bill — GST Ledger</div><div class="step-sub">Sales Ledger, IGST/SGST/CGST A/c allocation, Discount Ledger, Total Freight</div></div>
+        <div class="arrow-between">→</div>
+        <div class="step billing"><span class="step-left-bar"></span><span class="step-num">9</span><div class="step-title">Supplementary Bill</div><div class="step-sub">Bonded WH storage, risk charges, re-delivery — with full GST data</div></div>
+      </div>
+    </div>
+
+    <div class="phase-row" style="margin-top:6px">
+      <div class="phase-label"><div class="phase-badge">10–12<br>POST-BILL</div></div>
+      <div class="phase-steps">
+        <div class="step billing"><span class="step-left-bar"></span><span class="step-num">10</span><div class="step-title">Bill Sub. Date Update</div><div class="step-sub">Record physical bill submission date, Confirm Date, Certification Date</div></div>
+        <div class="arrow-between">→</div>
+        <div class="step billing"><span class="step-left-bar"></span><span class="step-num">11</span><div class="step-title">Bill Cancel</div><div class="step-sub">Cancel with attachment, image proof, delete if needed</div></div>
+        <div class="arrow-between">→</div>
+        <div class="step billing"><span class="step-left-bar"></span><span class="step-num">12</span><div class="step-title">Credit Note</div><div class="step-sub">Voucher-type CN against bill — SGST/CGST/IGST split, against specific CNs</div></div>
+      </div>
+    </div>
+
+    <div class="phase-row" style="margin-top:6px">
+      <div class="phase-label"><div class="phase-badge">15<br>DASHBOARD</div></div>
+      <div class="phase-steps">
+        <div class="step billing"><span class="step-left-bar"></span><span class="step-num">15</span><div class="step-title">Invoice Dashboard</div><div class="step-sub">All invoices — Office, Client, GST Nature, Doc Type, Amount, IRN status, Print/Email</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="flow-area">
+    <div class="section-title">Phase 5 — Payments & Settlement</div>
+
+    <div class="phase-row">
+      <div class="phase-label"><div class="phase-badge">13<br>RECEIPT</div></div>
+      <div class="phase-steps">
+        <div class="step payment"><span class="step-left-bar"></span><span class="step-num">13</span><div class="step-title">Bill Payment Receipt</div><div class="step-sub">Client payment against bills — Cheque/NEFT, TDS Ledger, On-Account, Deduction settlement</div></div>
+      </div>
+    </div>
+
+    <div class="phase-row" style="margin-top:6px">
+      <div class="phase-label"><div class="phase-badge">16<br>DETENTION</div></div>
+      <div class="phase-steps">
+        <div class="step payment"><span class="step-left-bar"></span><span class="step-num">16</span><div class="step-title">HM Detention with LAR</div><div class="step-sub">ETA, Reach/Unload Date, Detention Days, Delay Days, Penalty & Claims, TDS, Net Balance</div></div>
+        <div class="arrow-between">→</div>
+        <div class="step payment"><span class="step-left-bar"></span><span class="step-num">17</span><div class="step-title">Balance Payment Voucher</div><div class="step-sub">Final payment to transporter — Hire Charges net of TDS, advances, deductions via NEFT</div></div>
+        <div class="arrow-between">→</div>
+        <div class="step payment"><span class="step-left-bar"></span><span class="step-num">18</span><div class="step-title">Local / Incidental Exp</div><div class="step-sub">Unloading, Hamali, Other expenses — Incidental Expense/Deduction Recovery voucher</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-title">⚠️ Identified Pain Points in AS-IS System</div>
+  <div class="pain-grid">
+    <div class="pain-card"><h4>Manual Data Entry — Everywhere</h4><p>Vehicle No, consignee, broker, GSTN all entered manually at every step. Zero pre-fill from master data. High error rate across 65 branches.</p></div>
+    <div class="pain-card"><h4>No Real-Time Party Verification</h4><p>PAN, GSTIN, Bank Account of transporters/vendors entered by staff — no API verification at point of entry. Fraud risk & compliance gaps.</p></div>
+    <div class="pain-card"><h4>POD is Paper-Based Scan</h4><p>Driver physically returns POD → scan at office → manual upload. 3–7 day lag before billing can start. No mobile capture at delivery point.</p></div>
+    <div class="pain-card"><h4>Zero Client Communication Integration</h4><p>No automated alerts to clients for CN booking, in-transit status, delivery, or bill submission. All communication is ad hoc phone/email.</p></div>
+    <div class="pain-card"><h4>Bill Submission is Manual & Untracked</h4><p>Physical bill courier to client. Submission date entered manually later. No email tracking. Delayed entries mean DSO calculations are wrong.</p></div>
+    <div class="pain-card"><h4>No Single Source of Truth</h4><p>Invoice PDFs in email, POD images in WhatsApp, rate charts in Excel, client outstanding in separate ledger software — no unified data layer.</p></div>
+    <div class="pain-card"><h4>HM Detention Calculated Manually</h4><p>Detention days, delay penalties, unloading charges all computed manually in FM Slip. Errors and disputes with transporters are frequent.</p></div>
+    <div class="pain-card"><h4>e-Way Bill & e-Invoice Disconnected</h4><p>e-Way Bill number entered manually into TMS from a separate portal. No API link. e-Invoice (IRN) generation tracked separately.</p></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ─────────────────── TO-BE ─────────────────── -->
+<div id="tobe" class="view">
+<div class="main">
+
+  <div class="ssot-banner">
+    <div class="ssot-icon">🗄️</div>
+    <div>
+      <div class="ssot-title">Single Source of Truth Architecture</div>
+      <div class="ssot-sub">All data flows into one system. Every module writes to and reads from the same verified, real-time data layer — no silos, no reconciliation nightmares.</div>
+    </div>
+    <div class="ssot-nodes">
+      <div class="ssot-node">🔵 TMS Core (e-Fleet / New ERP)</div>
+      <div class="ssot-node">📁 Google Drive — Document Store</div>
+      <div class="ssot-node">🤖 AI Agent Layer</div>
+      <div class="ssot-node">📱 Mobile Field App</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span style="background:#F3E8FF;border:1px solid #C084FC;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600;color:#7B2FBE">🤖 AI Agent</span></div>
+    <div class="legend-item"><span style="background:#E0F2FE;border:1px solid #7DD3FC;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600;color:#0B7285">📱 Mobile</span></div>
+    <div class="legend-item"><span style="background:#FFF1E6;border:1px solid #FB923C;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600;color:#B5451B">🔌 Authbridge API</span></div>
+    <div class="legend-item"><span style="background:#DCFCE7;border:1px solid #86EFAC;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600;color:#15803D">💬 WhatsApp</span></div>
+    <div class="legend-item"><span style="background:#FEE2E2;border:1px solid #FCA5A5;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600;color:#D44638">📧 Gmail</span></div>
+    <div class="legend-item"><span style="background:#EFF6FF;border:1px solid #93C5FD;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600;color:#1A73E8">☁️ Google Drive</span></div>
+  </div>
+
+  <!-- MASTERS TO-BE -->
+  <div class="section-title">Phase 0 — Smart Master Data (AI-Verified, API-Enriched)</div>
+  <div class="tobe-phase-row">
+    <div class="phase-label"><div class="tobe-phase-badge">MASTERS<br>TO-BE</div></div>
+    <div class="tobe-steps">
+      <div class="tobe-step">
+        <div class="tobe-step-header">
+          <div class="tobe-step-title">🏢 Client & Vendor Onboarding — Verified at Source</div>
+          <div class="tobe-pills">
+            <span class="pill api">🔌 GSTIN Verification</span>
+            <span class="pill api">🔌 PAN to CIN</span>
+            <span class="pill api">🔌 Udyam / MSME</span>
+            <span class="pill api">🔌 Bank Account Verify</span>
+            <span class="pill drive">☁️ Drive KYC Store</span>
+          </div>
+        </div>
+        <div class="tobe-desc">When a new client or vendor is added, Authbridge APIs auto-verify GSTIN (legal name, address, status), PAN, derive CIN, check MSME tier, and verify bank account + IFSC. All KYC documents saved to Google Drive with structured folder per party. No manual entry — system pre-fills legal name, address, constitution type.</div>
+        <div class="tobe-improvements">
+          <span class="improvement-tag">✅ Zero manual errors in master data</span>
+          <span class="improvement-tag">✅ MSME compliance auto-flagged</span>
+          <span class="improvement-tag">✅ Bank fraud risk eliminated</span>
+        </div>
+      </div>
+      <div class="tobe-step">
+        <div class="tobe-step-header">
+          <div class="tobe-step-title">🚛 Hire Vehicle Onboarding — Transporter KYC</div>
+          <div class="tobe-pills">
+            <span class="pill api">🔌 PAN Verification</span>
+            <span class="pill api">🔌 Mobile Name Lookup</span>
+            <span class="pill mobile">📱 Driver App Onboarding</span>
+            <span class="pill drive">☁️ RC / Insurance Docs</span>
+          </div>
+        </div>
+        <div class="tobe-desc">Driver/transporter PAN validated via Authbridge at time of vehicle registration. Mobile number linked to name. RC, insurance, fitness certificate uploaded via mobile field app and auto-stored to Google Drive folder per vehicle. AI agent flags expiry dates 30 days in advance.</div>
+        <div class="tobe-improvements">
+          <span class="improvement-tag">✅ Transporter fraud prevention</span>
+          <span class="improvement-tag">✅ Document expiry alerts</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-title">Phase 1 — AI-Assisted CN/LR Booking</div>
+  <div class="tobe-phase-row">
+    <div class="phase-label"><div class="tobe-phase-badge">BOOKING<br>TO-BE</div></div>
+    <div class="tobe-steps">
+      <div class="tobe-step">
+        <div class="tobe-step-header">
+          <div class="tobe-step-title">📋 CN Creation — AI Pre-Fill & Rate Intelligence</div>
+          <div class="tobe-pills">
+            <span class="pill ai">🤖 AI Rate Suggester</span>
+            <span class="pill ai">🤖 e-Way Bill Auto-Fetch</span>
+            <span class="pill api">🔌 IEC Verification</span>
+            <span class="pill whatsapp">💬 Booking Confirmation</span>
+            <span class="pill mobile">📱 Mobile Entry</span>
+          </div>
+        </div>
+        <div class="tobe-desc">Branch staff opens CN form on mobile or desktop. AI agent suggests freight rate based on route, load type, weight, and historical rate patterns. e-Way bill number fetched/validated via NIC API. For JNPT shipments, IEC code verified via Authbridge. On CN save, WhatsApp confirmation auto-sent to consignor with CN No, route, expected delivery.</div>
+        <div class="tobe-improvements">
+          <span class="improvement-tag">✅ Rate suggestion saves 15 min/booking</span>
+          <span class="improvement-tag">✅ e-Way Bill auto-linked</span>
+          <span class="improvement-tag">✅ Instant client confirmation</span>
+        </div>
+      </div>
+      <div class="tobe-step">
+        <div class="tobe-step-header">
+          <div class="tobe-step-title">📄 CN Document — Intelligent Invoice OCR</div>
+          <div class="tobe-pills">
+            <span class="pill ai">🤖 OCR Invoice Reader</span>
+            <span class="pill mobile">📱 Camera Capture</span>
+            <span class="pill drive">☁️ Auto-Archive</span>
+          </div>
+        </div>
+        <div class="tobe-desc">Branch staff photographs client invoice on mobile. AI OCR extracts: Invoice No, Invoice Amount, Invoice Date, GSTN, consignee address. Auto-populates CN fields. Original image archived to Google Drive in structured folder (Client/Year/Month/CN No). Zero manual re-typing of invoice data.</div>
+        <div class="tobe-improvements">
+          <span class="improvement-tag">✅ Invoice data entry eliminated</span>
+          <span class="improvement-tag">✅ Audit trail in Drive</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-title">Phase 2 — Real-Time Operations with Mobile Field Execution</div>
+  <div class="tobe-phase-row">
+    <div class="phase-label"><div class="tobe-phase-badge">OPS<br>TO-BE</div></div>
+    <div class="tobe-steps">
+      <div class="tobe-step">
+        <div class="tobe-step-header">
+          <div class="tobe-step-title">📤 Challan Dispatch — Auto-Alerts & GPS Trigger</div>
+          <div class="tobe-pills">
+            <span class="pill mobile">📱 Driver App Dispatch</span>
+            <span class="pill whatsapp">💬 In-Transit Alert to Client</span>
+            <span class="pill ai">🤖 ETA Predictor</span>
+          </div>
+        </div>
+        <div class="tobe-desc">Challan created triggers automatic WhatsApp to consignee: "Your goods [CN No] dispatched on vehicle [No]. Expected arrival: [AI ETA]. Driver: [Name] [Mobile]." Driver receives trip details on mobile app. AI agent predicts ETA based on route KM, historical transit data, and time of dispatch.</div>
+        <div class="tobe-improvements">
+          <span class="improvement-tag">✅ Client proactively informed</span>
+          <span class="improvement-tag">✅ Reduced inbound calls</span>
+        </div>
+      </div>
+      <div class="tobe-step">
+        <div class="tobe-step-header">
+          <div class="tobe-step-title">📝 Hire Memo (FM) — Verified Transporter Auto-Fill</div>
+          <div class="tobe-pills">
+            <span class="pill api">🔌 PAN Verification at FM</span>
+            <span class="pill api">🔌 Mobile Name Lookup</span>
+            <span class="pill ai">🤖 TDS Auto-Calculate</span>
+            <span class="pill drive">☁️ FM Slip PDF to Drive</span>
+          </div>
+        </div>
+        <div class="tobe-desc">On Hire Memo creation, PAN status verified live via Authbridge. Mobile number linked to owner name for fraud check. AI calculates TDS rate based on PAN category (individual/company), threshold crossings, and existing payments. FM Slip PDF auto-generated and stored to Drive. Advance payment triggers WhatsApp confirmation to transporter.</div>
+        <div class="tobe-improvements">
+          <span class="improvement-tag">✅ TDS errors eliminated</span>
+          <span class="improvement-tag">✅ PAN fraud detection</span>
+        </div>
+      </div>
+      <div class="tobe-step">
+        <div class="tobe-step-header">
+          <div class="tobe-step-title">📍 Arrival Report — Mobile Real-Time Entry</div>
+          <div class="tobe-pills">
+            <span class="pill mobile">📱 Mobile Arrival Capture</span>
+            <span class="pill ai">🤖 Detention Auto-Flag</span>
+            <span class="pill whatsapp">💬 Arrival Alert to Client</span>
+          </div>
+        </div>
+        <div class="tobe-desc">Receiving office staff logs arrival on mobile app with timestamp. System automatically computes transit days vs committed days. AI flags detention triggers instantly. Client WhatsApp: "Your goods [CN No] have arrived at [Office]. Delivery scheduled for [Date]." No desktop login required for arrival marking.</div>
+        <div class="tobe-improvements">
+          <span class="improvement-tag">✅ Real-time arrival data</span>
+          <span class="improvement-tag">✅ Early detention warning</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-title">Phase 3 — Mobile POD Capture & Instant Billing Trigger</div>
+  <div class="tobe-phase-row">
+    <div class="phase-label"><div class="tobe-phase-badge">POD<br>TO-BE</div></div>
+    <div class="tobe-steps">
+      <div class="tobe-step">
+        <div class="tobe-step-header">
+          <div class="tobe-step-title">📸 POD at Point of Delivery — Mobile Camera → Drive</div>
+          <div class="tobe-pills">
+            <span class="pill mobile">📱 Driver/DEO Mobile Capture</span>
+            <span class="pill drive">☁️ Auto-Upload to Drive</span>
+            <span class="pill ai">🤖 POD Image Validator</span>
+            <span class="pill whatsapp">💬 POD Received Alert</span>
+          </div>
+        </div>
+        <div class="tobe-desc">Driver captures POD signature/stamp photo at delivery point on mobile app. Image auto-uploads to Google Drive (structured: Client/Route/CN No/POD). AI agent validates image quality and detects if POD is blank or unclear — prompts retake. Billing team gets instant WhatsApp notification: "POD received for CN [No]. Bill can now be raised." Zero wait time for POD to return to branch.</div>
+        <div class="tobe-improvements">
+          <span class="improvement-tag">✅ POD-to-billing lag: 7 days → 0 hours</span>
+          <span class="improvement-tag">✅ POD always accessible in Drive</span>
+          <span class="improvement-tag">✅ DSO improves significantly</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-title">Phase 4 — Smart Billing with Auto-Email & e-Invoice</div>
+  <div class="tobe-phase-row">
+    <div class="phase-label"><div class="tobe-phase-badge">BILLING<br>TO-BE</div></div>
+    <div class="tobe-steps">
+      <div class="tobe-step">
+        <div class="tobe-step-header">
+          <div class="tobe-step-title">🧾 Bill Creation — AI GST Validator & Auto-Dispatch</div>
+          <div class="tobe-pills">
+            <span class="pill ai">🤖 GST Compliance AI</span>
+            <span class="pill ai">🤖 e-Invoice IRN Auto-Gen</span>
+            <span class="pill gmail">📧 Bill Auto-Email with PDF</span>
+            <span class="pill drive">☁️ Invoice Archive in Drive</span>
+            <span class="pill whatsapp">💬 Bill Dispatch to Client WhatsApp</span>
+          </div>
+        </div>
+        <div class="tobe-desc">On bill save, AI agent validates: HSN/SAC code, GSTIN status of client (active/inactive), correct IGST/SGST/CGST split for supply state. e-Invoice IRN generated via NIC API and QR code embedded in PDF. Invoice PDF auto-emailed via Gmail with structured subject: [BRL/INV/2025/1234] and auto-archived to Google Drive. WhatsApp message to client AP team: "Invoice [No] for ₹X attached. Due: [Date]." Bill submission date auto-marked on email delivery confirmation.</div>
+        <div class="tobe-improvements">
+          <span class="improvement-tag">✅ IRN generation automated</span>
+          <span class="improvement-tag">✅ Bill submission date auto-tracked</span>
+          <span class="improvement-tag">✅ Zero courier cost for bill delivery</span>
+          <span class="improvement-tag">✅ Invoice in Drive = instant retrieval</span>
+        </div>
+      </div>
+      <div class="tobe-step">
+        <div class="tobe-step-header">
+          <div class="tobe-step-title">📊 AI Accounts Receivable Intelligence</div>
+          <div class="tobe-pills">
+            <span class="pill ai">🤖 Payment Predictor</span>
+            <span class="pill ai">🤖 Aging Alert Agent</span>
+            <span class="pill whatsapp">💬 Payment Reminders</span>
+            <span class="pill gmail">📧 Escalation Emails</span>
+          </div>
+        </div>
+        <div class="tobe-desc">AI agent monitors outstanding bills and predicts payment date based on client payment history. At 7 days before due date: WhatsApp reminder to client. At due date: auto-email from Gmail. At 7 days overdue: escalation email to relationship manager + flag on dashboard. For Waaree/BASF/Tata accounts, separate reconciliation AI matches invoices to client vendor portal data automatically.</div>
+        <div class="tobe-improvements">
+          <span class="improvement-tag">✅ DSO reduction</span>
+          <span class="improvement-tag">✅ Reconciliation automated</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-title">Phase 5 — Transporter Settlement with AI Detention & TDS Automation</div>
+  <div class="tobe-phase-row">
+    <div class="phase-label"><div class="tobe-phase-badge">PAYMENT<br>TO-BE</div></div>
+    <div class="tobe-steps">
+      <div class="tobe-step">
+        <div class="tobe-step-header">
+          <div class="tobe-step-title">⏱️ HM Detention — Fully Automated Calculation</div>
+          <div class="tobe-pills">
+            <span class="pill ai">🤖 Detention Calculator Agent</span>
+            <span class="pill whatsapp">💬 Transporter Detention Alert</span>
+            <span class="pill api">🔌 Bank Account Verify at Payment</span>
+          </div>
+        </div>
+        <div class="tobe-desc">From Arrival timestamp (mobile), system auto-computes detention days, delay days, unloading charges. AI agent applies contracted rates and penalty slabs. Transporter gets WhatsApp with detention summary for approval before payment. Final balance payment — bank account re-verified via Authbridge Mobile-to-Account API before NEFT instruction released. Zero manual detention disputes.</div>
+        <div class="tobe-improvements">
+          <span class="improvement-tag">✅ Detention disputes eliminated</span>
+          <span class="improvement-tag">✅ Wrong bank transfer risk eliminated</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ─────────────────── APIs ─────────────────── -->
+<div id="apis" class="view">
+<div class="main">
+
+  <div class="info-banner">
+    <div class="icon">🔌</div>
+    <div><strong>Authbridge API Suite</strong> — All APIs sourced from Authbridge's bundled suite. Sandbox credentials for development. Mapped below to exact TMS touchpoints where each API fires.</div>
+  </div>
+
+  <div class="section-title">Authbridge API — TMS Integration Mapping</div>
+  <div class="api-grid">
+    <div class="api-card">
+      <h4>PAN Verification</h4>
+      <p>Validate PAN format, fetch legal name and PAN status.</p>
+      <span class="api-where">→ FM/Hire Slip creation · Vendor Master</span>
+    </div>
+    <div class="api-card">
+      <h4>GSTIN Verification</h4>
+      <p>Pull legal name, trade name, address, nature of business, turnover slab, constitution, filing status.</p>
+      <span class="api-where">→ Client Master · Vendor Master · Bill Creation GST Validation</span>
+    </div>
+    <div class="api-card">
+      <h4>CIN Search</h4>
+      <p>Fetch incorporation details, directors, company status from MCA. For corporate clients.</p>
+      <span class="api-where">→ Client Core ID · Legal entity verification</span>
+    </div>
+    <div class="api-card">
+      <h4>PAN to CIN</h4>
+      <p>Derive CIN from PAN where CIN not directly provided by party.</p>
+      <span class="api-where">→ Client & Vendor Master auto-resolve</span>
+    </div>
+    <div class="api-card">
+      <h4>PAN to MSME</h4>
+      <p>Auto-fetch Udyam number from PAN if entity is MSME-registered.</p>
+      <span class="api-where">→ Vendor Master · MSME payment compliance</span>
+    </div>
+    <div class="api-card">
+      <h4>Udyam Verification</h4>
+      <p>Verify Udyam registration and pull enterprise category (Micro/Small/Medium).</p>
+      <span class="api-where">→ Transporter onboarding · MSME tier badge</span>
+    </div>
+    <div class="api-card">
+      <h4>IEC Verification</h4>
+      <p>Validate IEC registration for importers/exporters. Conditional for JNPT/port clients.</p>
+      <span class="api-where">→ JNPT CN Creation · Export client onboarding</span>
+    </div>
+    <div class="api-card">
+      <h4>Bank Account Verification</h4>
+      <p>Verify account number + IFSC, fetch bank name, branch, account holder name.</p>
+      <span class="api-where">→ Vendor Bank KYC · Balance Payment before NEFT</span>
+    </div>
+    <div class="api-card">
+      <h4>Mobile to Account</h4>
+      <p>Link mobile number to bank account/UPI VPA; validate name match for fraud prevention.</p>
+      <span class="api-where">→ Vendor Bank fallback · Driver payment verification</span>
+    </div>
+    <div class="api-card">
+      <h4>Mobile Name Lookup</h4>
+      <p>Fetch subscriber name from mobile number — validates driver/transporter identity.</p>
+      <span class="api-where">→ Driver Contact KYC · FM Hire Slip verification</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-title">Additional Integration Stack</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:12px">
+
+    <div style="background:#DCFCE7;border:1.5px solid #86EFAC;border-radius:10px;padding:16px">
+      <h3 style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#15803D;margin-bottom:10px">💬 WhatsApp Business API</h3>
+      <ul style="list-style:none">
+        <li style="font-size:12px;color:#166534;padding:4px 0;border-bottom:1px solid #BBF7D0">📋 CN Booking confirmation → Consignor</li>
+        <li style="font-size:12px;color:#166534;padding:4px 0;border-bottom:1px solid #BBF7D0">🚛 Dispatch in-transit alert → Consignee</li>
+        <li style="font-size:12px;color:#166534;padding:4px 0;border-bottom:1px solid #BBF7D0">📍 Arrival at destination → Consignee</li>
+        <li style="font-size:12px;color:#166534;padding:4px 0;border-bottom:1px solid #BBF7D0">📸 POD received → Billing team</li>
+        <li style="font-size:12px;color:#166534;padding:4px 0;border-bottom:1px solid #BBF7D0">🧾 Invoice dispatched → Client AP team</li>
+        <li style="font-size:12px;color:#166534;padding:4px 0;border-bottom:1px solid #BBF7D0">⚠️ Payment reminder (7D / Due / OD)</li>
+        <li style="font-size:12px;color:#166534;padding:4px 0">⏱️ Detention summary → Transporter</li>
+      </ul>
+    </div>
+
+    <div style="background:#FEE2E2;border:1.5px solid #FCA5A5;border-radius:10px;padding:16px">
+      <h3 style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#DC2626;margin-bottom:10px">📧 Gmail / Google Workspace</h3>
+      <ul style="list-style:none">
+        <li style="font-size:12px;color:#7f1d1d;padding:4px 0;border-bottom:1px solid #FCA5A5">📄 Invoice PDF auto-email to client on bill save</li>
+        <li style="font-size:12px;color:#7f1d1d;padding:4px 0;border-bottom:1px solid #FCA5A5">📬 Structured subject line for easy tracking</li>
+        <li style="font-size:12px;color:#7f1d1d;padding:4px 0;border-bottom:1px solid #FCA5A5">📨 Overdue escalation to relationship manager</li>
+        <li style="font-size:12px;color:#7f1d1d;padding:4px 0;border-bottom:1px solid #FCA5A5">📩 Credit Note auto-email with revised invoice</li>
+        <li style="font-size:12px;color:#7f1d1d;padding:4px 0;border-bottom:1px solid #FCA5A5">📮 Payment receipt confirmation to client</li>
+        <li style="font-size:12px;color:#7f1d1d;padding:4px 0">📊 Monthly statement of account auto-dispatch</li>
+      </ul>
+    </div>
+
+    <div style="background:#EFF6FF;border:1.5px solid #93C5FD;border-radius:10px;padding:16px">
+      <h3 style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#1D4ED8;margin-bottom:10px">☁️ Google Drive — Document Layer</h3>
+      <ul style="list-style:none">
+        <li style="font-size:12px;color:#1e3a5f;padding:4px 0;border-bottom:1px solid #BFDBFE">📁 Client KYC folder — GSTIN, PAN, CIN docs</li>
+        <li style="font-size:12px;color:#1e3a5f;padding:4px 0;border-bottom:1px solid #BFDBFE">📁 Vendor KYC — PAN, Bank, MSME, RC docs</li>
+        <li style="font-size:12px;color:#1e3a5f;padding:4px 0;border-bottom:1px solid #BFDBFE">📁 POD Images — Client/Route/CN/POD</li>
+        <li style="font-size:12px;color:#1e3a5f;padding:4px 0;border-bottom:1px solid #BFDBFE">📁 Invoices — Year/Month/Client/Inv No</li>
+        <li style="font-size:12px;color:#1e3a5f;padding:4px 0;border-bottom:1px solid #BFDBFE">📁 FM Slips — Monthly by office</li>
+        <li style="font-size:12px;color:#1e3a5f;padding:4px 0;border-bottom:1px solid #BFDBFE">📁 Vehicle Docs — RC/Insurance/FC per vehicle</li>
+        <li style="font-size:12px;color:#1e3a5f;padding:4px 0">📁 Rate Charts — Version-controlled per client</li>
+      </ul>
+    </div>
+
+    <div style="background:#F3E8FF;border:1.5px solid #C084FC;border-radius:10px;padding:16px">
+      <h3 style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#7B2FBE;margin-bottom:10px">🤖 AI Agent Layer</h3>
+      <ul style="list-style:none">
+        <li style="font-size:12px;color:#4C1D95;padding:4px 0;border-bottom:1px solid #E9D5FF">📊 Rate suggestion based on history</li>
+        <li style="font-size:12px;color:#4C1D95;padding:4px 0;border-bottom:1px solid #E9D5FF">🔍 Invoice OCR & auto-fill</li>
+        <li style="font-size:12px;color:#4C1D95;padding:4px 0;border-bottom:1px solid #E9D5FF">📅 ETA prediction by route & time</li>
+        <li style="font-size:12px;color:#4C1D95;padding:4px 0;border-bottom:1px solid #E9D5FF">⚠️ Detention auto-flag & calculation</li>
+        <li style="font-size:12px;color:#4C1D95;padding:4px 0;border-bottom:1px solid #E9D5FF">💰 TDS auto-calculation per PAN category</li>
+        <li style="font-size:12px;color:#4C1D95;padding:4px 0;border-bottom:1px solid #E9D5FF">📈 DSO predictor & payment pattern AI</li>
+        <li style="font-size:12px;color:#4C1D95;padding:4px 0;border-bottom:1px solid #E9D5FF">🧾 GST compliance validator at bill save</li>
+        <li style="font-size:12px;color:#4C1D95;padding:4px 0">📋 Waaree/BASF reconciliation AI</li>
+      </ul>
+    </div>
+
+  </div>
+
+</div>
+</div>
+
+<!-- ─────────────────── COMPARE ─────────────────── -->
+<div id="compare" class="view">
+<div class="main">
+
+  <div class="section-title">AS-IS vs TO-BE — Process Comparison</div>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Process Step</th>
+        <th style="width:30%">AS-IS (Current State)</th>
+        <th style="width:30%">TO-BE (Future State)</th>
+        <th style="width:22%">Impact</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Client / Vendor Onboarding</strong></td>
+        <td class="status-bad">Manual entry of GSTIN, PAN, bank details. No verification. Errors propagate through system.</td>
+        <td class="status-good">Authbridge API auto-verifies GSTIN, PAN, CIN, Bank Account at point of entry. KYC docs to Drive.</td>
+        <td>🚫 Fraud eliminated<br>⚡ Onboarding: 2 hrs → 10 min</td>
+      </tr>
+      <tr>
+        <td><strong>CN / LR Booking</strong></td>
+        <td class="status-bad">Rate chart looked up manually. e-Way Bill number typed in. No client confirmation sent.</td>
+        <td class="status-good">AI suggests rate. e-Way Bill auto-fetched & validated. WhatsApp confirmation instant on CN save.</td>
+        <td>⚡ Booking time: 20 min → 8 min<br>📱 Client informed instantly</td>
+      </tr>
+      <tr>
+        <td><strong>Invoice Data Entry</strong></td>
+        <td class="status-bad">Invoice No, Amount, Date manually typed into CN from paper. High error rate.</td>
+        <td class="status-good">Mobile camera photograph → AI OCR extracts all fields → auto-populated → archived to Drive.</td>
+        <td>✅ 100% accuracy<br>⚡ 5 min → 30 seconds</td>
+      </tr>
+      <tr>
+        <td><strong>Hire Memo / FM Slip</strong></td>
+        <td class="status-bad">PAN entered manually. TDS rate calculated manually. Errors in TDS common. FM slip printed and filed.</td>
+        <td class="status-good">PAN live-verified via Authbridge. TDS auto-calculated by AI. FM PDF auto-archived to Drive.</td>
+        <td>✅ TDS errors → zero<br>🔒 PAN fraud detection</td>
+      </tr>
+      <tr>
+        <td><strong>Arrival Reporting</strong></td>
+        <td class="status-bad">Desktop entry at branch. Often delayed by hours or next day. Transit time calculation manual.</td>
+        <td class="status-good">Mobile entry at time of arrival. Timestamp auto-captured. AI flags detention trigger. WhatsApp to client.</td>
+        <td>⚡ Real-time visibility<br>⚠️ Detention flagged instantly</td>
+      </tr>
+      <tr>
+        <td><strong>POD Collection</strong></td>
+        <td class="status-bad">Paper POD returns with lorry to branch. Manual scan. Upload. 3–7 day lag before billing.</td>
+        <td class="status-good">Driver captures POD at delivery on mobile app. Auto-upload to Drive. Billing team notified instantly.</td>
+        <td>⚡ POD-to-bill lag: 7 days → 0 hrs<br>📉 DSO improvement: 8–12 days</td>
+      </tr>
+      <tr>
+        <td><strong>Bill Creation & Dispatch</strong></td>
+        <td class="status-bad">Manual GST validation. Bill printed, couriered or emailed manually. Submission date entered later by memory.</td>
+        <td class="status-good">AI validates GST. IRN auto-generated. Invoice PDF auto-emailed via Gmail + WhatsApp. Submission auto-timestamped.</td>
+        <td>✅ e-Invoice compliant<br>💰 ₹0 courier cost<br>📅 Sub date auto-tracked</td>
+      </tr>
+      <tr>
+        <td><strong>Payment Follow-Up</strong></td>
+        <td class="status-bad">Relationship manager manually calls/emails. No systematic aging alerts. Follow-up depends on individual.</td>
+        <td class="status-good">AI agent sends WhatsApp at 7D/due/OD. Gmail escalation to RM at OD. Payment predictor flags risk accounts.</td>
+        <td>📉 DSO reduction estimated 10–18 days<br>✅ No manual follow-up needed</td>
+      </tr>
+      <tr>
+        <td><strong>Transporter Settlement</strong></td>
+        <td class="status-bad">Detention days calculated manually. Disputes common. Bank account entered from memory. Wrong transfers occur.</td>
+        <td class="status-good">Detention auto-calculated from mobile timestamps. Bank re-verified via Authbridge before NEFT release.</td>
+        <td>🚫 Wrong transfers eliminated<br>✅ Dispute rate → near zero</td>
+      </tr>
+      <tr>
+        <td><strong>Document Retrieval</strong></td>
+        <td class="status-bad">POD images in WhatsApp chats. Invoices in individual email inboxes. Rate charts in Excel on local PCs.</td>
+        <td class="status-good">All documents in structured Google Drive. Accessible from any device instantly. Version-controlled.</td>
+        <td>☁️ Single source of truth<br>⚡ Retrieval: hours → seconds</td>
+      </tr>
+      <tr>
+        <td><strong>Client Reconciliation</strong><br>(Waaree / BASF / Tata)</td>
+        <td class="status-bad">Manual matching of BRL invoices vs client vendor portal. Monthly exercise taking 3–5 days of analyst time.</td>
+        <td class="status-good">AI reconciliation agent matches invoices automatically. Mismatches flagged with reason codes. Excel export for client.</td>
+        <td>⚡ Reconciliation: 5 days → 4 hours<br>📉 Dispute resolution faster</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="divider"></div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:4px">
+    <div style="background:linear-gradient(135deg,#0E7C56,#0B7285);border-radius:12px;padding:20px;color:#fff;text-align:center">
+      <div style="font-size:32px;font-family:'Syne',sans-serif;font-weight:800;margin-bottom:4px">8–12 Days</div>
+      <div style="font-size:13px;opacity:0.85">Estimated DSO Improvement</div>
+    </div>
+    <div style="background:linear-gradient(135deg,#1646A9,#6B4FA0);border-radius:12px;padding:20px;color:#fff;text-align:center">
+      <div style="font-size:32px;font-family:'Syne',sans-serif;font-weight:800;margin-bottom:4px">70%</div>
+      <div style="font-size:13px;opacity:0.85">Manual Data Entry Elimination</div>
+    </div>
+    <div style="background:linear-gradient(135deg,#B5451B,#D4891A);border-radius:12px;padding:20px;color:#fff;text-align:center">
+      <div style="font-size:32px;font-family:'Syne',sans-serif;font-weight:800;margin-bottom:4px">~Zero</div>
+      <div style="font-size:13px;opacity:0.85">Wrong Transporter Payments</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+  function showTab(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+  }
+</script>
+</body>
+</html>
